@@ -11,12 +11,9 @@
 
 using namespace std;
 using namespace cv;
-typedef vector<float> RowVector;
-typedef vector<RowVector> Matrix;
-const float EPS = 1e-6f;
 
 // forward declarations
-Pair<Point, Point> eye_candidates(Mat& img);
+pair<Point, Point> eye_candidates(Mat& img);
 
 void log_statistics(double stat) {
 	return;
@@ -95,7 +92,7 @@ pair<Point, Point> eye_candidates(Mat& original_frame) {
 
 	// detect faces
 	vector<Rect> faces;
-	face_cascade.detectMultiScale(img, faces, 1.5, 2, CV_HAAR_FIND_BIGGEST_OBJECT, Size(40, 40));
+	face_cascade.detectMultiScale(img, faces, 1.2, 3, CV_HAAR_FIND_BIGGEST_OBJECT, Size(80, 80));
 
 	// find the biggest face
 	int max_size = 0;
@@ -108,73 +105,48 @@ pair<Point, Point> eye_candidates(Mat& original_frame) {
 		}
 	}
 
-	Mat faceROI;
-	int x = 0, y = 0;
-	if (max_face == NULL) {
-		// perform eye detection to the whole image
-		faceROI = img;
-	} else {
-		// perform eye detection to the upper half of face
-		x = max_face->x;
-		y = max_face->y;
-		rectangle(frame, *max_face, Scalar(255, 0, 0), 4);
-		max_face->height *= 2.0 / 3.0;
-		faceROI = img(*max_face);
-	}
-
-	// detect eyes
-	vector<Rect> eyes;
-	double scale = max_face ? 1.1 : 1.7;
-	eyes_cascade.detectMultiScale(faceROI, eyes, scale, 2, 0, Size(40, 40), Size(80, 80));
 	static int lx, ly, rx, ry;
-	if (eyes.size() == 2) {
-		// ok, right eye has less x
-		auto& e1 = eyes[0];
-		auto& e2 = eyes[1];
-		// check if rectangles intersect, if it does, ignore them
-		int a = e1.x, b = e1.x + e1.width, L = e2.x, R = e2.x + e2.width;
-		if (b < L || R < a) {
-			a = e1.y, b = e1.y + e1.height, L = e2.y, R = e2.y + e2.height;
-			if (b < L || R < a) {
-				lx = cvRound(x + e1.x + e1.width / 2.0);
-				ly = cvRound(y + e1.y + e1.height / 2.0);
-				rx = cvRound(x + e2.x + e2.width / 2.0);
-				ry = cvRound(y + e2.y + e2.width / 2.0);
-				if (lx < rx) swap(lx, rx), swap(ly, ry);
-			}
-		}
+	if (max_face) {
+		// Ajmera et. al approximation
+		// approximate eye coordinates based on frontal face rectangle
+		int x = max_face->x;
+		int y = max_face->y;
+		// rectangle(frame, *max_face, Scalar(255, 0, 0), 4);
+		max_face->height *= 2.0 / 3.0;
+		ry = ly = cvRound(y + max_face->height * 5 / 8.0);
+		rx = cvRound(x + max_face->width * 5 / 16.0);
+		lx = cvRound(x + max_face->width * 11 / 16.0);
 	} else {
-		if (max_face) {
-			// Ajmera et. al approximation
-			// approximate eye coordinates based on frontal face rectangle
-			ry = ly = cvRound(y + max_face->height * 5 / 8.0);
-			rx = cvRound(x + max_face->width * 5 / 16.0);
-			lx = cvRound(x + max_face->width * 11 / 16.0);
-		}
-		if (eyes.size() > 2) {
-			// get the eyes nearest to the interpolated points
-			double best = HUGE_VAL;
-			int LX, LY, RX, RY;
-			for (int i = 0; i < eyes.size(); ++i) {
-				double x1 = x + eyes[i].x + eyes[i].width / 2.0;
-				double y1 = y + eyes[i].y + eyes[i].height / 2.0;
-				for (int j = 0; j < eyes.size(); ++j) {
-					if (i == j) continue;
-					double x2 = x + eyes[j].x + eyes[j].width / 2.0;
-					double y2 = y + eyes[j].y + eyes[j].height / 2.0;
-					double vx = x2 - x1 - lx + rx;
-					double vy = y2 - y1 - ly + ry;
-					double dist = vx * vx + vy * vy;
-					if (dist < best) {
-						best = dist;
-						LX = cvRound(x2);
-						LY = cvRound(y2);
-						RX = cvRound(x1);
-						RY = cvRound(y1);
-					}
+		// find the eyes
+		vector<Rect> eyes;
+		eyes_cascade.detectMultiScale(img, eyes, 1.75, 4, CV_HAAR_DO_CANNY_PRUNING, Size(40, 40), Size(80, 80));
+		for (auto& eye : eyes)
+			rectangle(frame, eye, Scalar(0, 0, 255));
+		// get the eyes nearest to the interpolated points
+		double best = HUGE_VAL;
+		int LX, LY, RX, RY;
+		double angle = atan2(ly - ry, lx - rx);
+		for (int i = 0; i < eyes.size(); ++i) {
+			double x1 = eyes[i].x + eyes[i].width / 2.0;
+			double y1 = eyes[i].y + eyes[i].height / 2.0;
+			for (int j = 0; j < eyes.size(); ++j) {
+				if (i == j) continue;
+				double x2 = eyes[j].x + eyes[j].width / 2.0;
+				double y2 = eyes[j].y + eyes[j].height / 2.0;
+				if (hypot(x2 - x1, y2 - y1) - eyes[i].width < 2)
+					continue;
+				double test = atan2(y2 - y1, x2 - x1);
+				double dist = abs(test - angle);
+				if (dist < best) {
+					best = dist;
+					LX = cvRound(x2);
+					LY = cvRound(y2);
+					RX = cvRound(x1);
+					RY = cvRound(y1);
 				}
 			}
-			cout << best << endl;
+		}
+		if (best != HUGE_VAL) {
 			if (LX < RX) swap(LX, RX), swap(LY, RY);
 			lx = LX;
 			ly = LY;
@@ -184,7 +156,7 @@ pair<Point, Point> eye_candidates(Mat& original_frame) {
 	}
 	auto time_end = cvGetTickCount();
 	double delta_time = (time_end - time_start) / (cvGetTickFrequency() * 1000.0);
-	printf("%d, time = %.4lfms\n", (int) eyes.size(), delta_time);
+	printf("time = %.4lfms\n", delta_time);
 	circle(frame, {lx, ly}, 20, Scalar(255, 0, 0), 4);
 	circle(frame, {rx, ry}, 20, Scalar(0, 255, 0), 4);
 	imshow("Eye Detection", frame);
