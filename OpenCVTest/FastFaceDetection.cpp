@@ -131,11 +131,18 @@ pair<Point, Point> eye_candidates(Mat& original_frame) {
 		// ok, right eye has less x
 		auto& e1 = eyes[0];
 		auto& e2 = eyes[1];
-		lx = cvRound(x + e1.x + e1.width / 2.0);
-		ly = cvRound(y + e1.y + e1.height / 2.0);
-		rx = cvRound(x + e2.x + e2.width / 2.0);
-		ry = cvRound(y + e2.y + e2.width / 2.0);
-		if (lx < rx) swap(lx, rx), swap(ly, ry);
+		// check if rectangles intersect, if it does, ignore them
+		int a = e1.x, b = e1.x + e1.width, L = e2.x, R = e2.x + e2.width;
+		if (b < L || R < a) {
+			a = e1.y, b = e1.y + e1.height, L = e2.y, R = e2.y + e2.height;
+			if (b < L || R < a) {
+				lx = cvRound(x + e1.x + e1.width / 2.0);
+				ly = cvRound(y + e1.y + e1.height / 2.0);
+				rx = cvRound(x + e2.x + e2.width / 2.0);
+				ry = cvRound(y + e2.y + e2.width / 2.0);
+				if (lx < rx) swap(lx, rx), swap(ly, ry);
+			}
+		}
 	} else {
 		if (max_face) {
 			// Ajmera et. al approximation
