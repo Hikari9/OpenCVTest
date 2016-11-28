@@ -19,8 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="accurate_eye_detect.cpp" />
     <ClCompile Include="FaceDetection.cpp" />
     <ClCompile Include="FastFaceDetection.cpp" />
+    <ClCompile Include="findEyeCenter.cpp" />
+    <ClCompile Include="findEyeCorner.cpp" />
+    <ClCompile Include="helpers.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="data\haarcascades\haarcascade_eye.xml" />
@@ -40,6 +45,12 @@
     <Xml Include="data\haarcascades\haarcascade_russian_plate_number.xml" />
     <Xml Include="data\haarcascades\haarcascade_smile.xml" />
     <Xml Include="data\haarcascades\haarcascade_upperbody.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="constants.h" />
+    <ClInclude Include="findEyeCenter.h" />
+    <ClInclude Include="findEyeCorner.h" />
+    <ClInclude Include="helpers.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{28A72F10-CCF7-4E5D-BB32-A1157524E41B}</ProjectGuid>

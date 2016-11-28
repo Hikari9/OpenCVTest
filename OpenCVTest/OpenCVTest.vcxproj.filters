@@ -21,6 +21,21 @@
     <ClCompile Include="FastFaceDetection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="findEyeCenter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="findEyeCorner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="accurate_eye_detect.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Xml Include="data\haarcascades\haarcascade_eye.xml">
@@ -74,5 +89,19 @@
     <Xml Include="data\haarcascades\haarcascade_upperbody.xml">
       <Filter>Resource Files</Filter>
     </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="constants.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="findEyeCenter.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="findEyeCorner.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="helpers.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -21,7 +21,7 @@ void log_statistics(double stat) {
 	stream.precision(6);
 	stream << fixed << stat << endl;
 }
-int main() {
+int face_main() {
 	int camera_id = 0;
 	VideoCapture webcam;
 	Mat frame;
@@ -111,7 +111,7 @@ pair<Point, Point> eye_candidates(Mat& original_frame) {
 		// approximate eye coordinates based on frontal face rectangle
 		int x = max_face->x;
 		int y = max_face->y;
-		// rectangle(frame, *max_face, Scalar(255, 0, 0), 4);
+		rectangle(frame, *max_face, Scalar(255, 0, 0), 4);
 		max_face->height *= 2.0 / 3.0;
 		ry = ly = cvRound(y + max_face->height * 5 / 8.0);
 		rx = cvRound(x + max_face->width * 5 / 16.0);
@@ -157,7 +157,7 @@ pair<Point, Point> eye_candidates(Mat& original_frame) {
 	auto time_end = cvGetTickCount();
 	double delta_time = (time_end - time_start) / (cvGetTickFrequency() * 1000.0);
 	printf("time = %.4lfms\n", delta_time);
-	circle(frame, {lx, ly}, 20, Scalar(255, 0, 0), 4);
+	circle(frame, {lx, ly}, 20, Scalar(0, 255, 0), 4);
 	circle(frame, {rx, ry}, 20, Scalar(0, 255, 0), 4);
 	imshow("Eye Detection", frame);
 	return {{lx, ly}, {rx, ry}};
