@@ -20,13 +20,13 @@ namespace accurate_eye_detect {
 	const bool kPlotVectorField = false;
 
 	// Size constants
-	const int kEyePercentTop = 25;
-	const int kEyePercentSide = 13;
-	const int kEyePercentHeight = 30;
-	const int kEyePercentWidth = 35;
+	const int kEyePercentTop = 33;
+	const int kEyePercentSide = 19;
+	const int kEyePercentHeight = 16;
+	const int kEyePercentWidth = 24;
 
 	// Preprocessing
-	const bool kSmoothFaceImage = false;
+	const bool kSmoothFaceImage = true;
 	const float kSmoothFaceFactor = 0.005f;
 
 	// Algorithm Parameters
@@ -147,7 +147,7 @@ namespace accurate_eye_detect {
 
 	Mat flood_kill_edges(Mat& mat) {
 		// kill edges to 0 using BFS
-		rectangle(mat, cv::Rect(0, 0, mat.cols, mat.rows), 255);
+		// rectangle(mat, cv::Rect(0, 0, mat.cols, mat.rows), 255);
 		Mat mask(mat.rows, mat.cols, CV_8U, 255);
 		static int dx[] = {-1, 0, 1, 0};
 		static int dy[] = {0, -1, 0, 1};
@@ -243,7 +243,7 @@ namespace accurate_eye_detect {
 				if (gx == 0.0 && gy == 0.0)
 					continue;
 				pq.push({-mr[y], {x, y}});
-				if (pq.size() > 30) pq.pop();
+				if (pq.size() > 55) pq.pop();
 				// test_possible_centers_formula(x, y, weight, gx, gy, sum);
 			}
 		}
